@@ -1,0 +1,20 @@
+#~ .NET Project
+
+bin/
+build/
+dist/
+research/
+
+**/bin/
+**/obj/
+**/.idea/
+**/.vs/
+**/*.csproj.user
+**/*.DotSettings.user
+**/BenchmarkDotNet.Artifacts
+
+*.log
+
+TODO.md
+.meta.*
+.nuget.key
