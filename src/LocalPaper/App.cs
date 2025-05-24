@@ -24,7 +24,10 @@ internal class App {
 
         Log.Debug($"Local IP Addresses: {string.Join(", ", ips)}");
 
-        using var web = new WebServer(ips.ToArray(), 8084);
+        var composers = new List<Composer>();
+        composers.Add(new Composer("any"));
+
+        using var web = new WebServer(ips, 8084, composers);
         web.Start();
 
         var cancelSource = new CancellationTokenSource();
