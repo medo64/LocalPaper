@@ -10,11 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 internal class WebServer : IDisposable {
-    public WebServer(IEnumerable<IPAddress> ips, int port, IEnumerable<DeviceDisplay> displays) {
-        foreach (var ip in ips) {
-            var url = "http://" + ip.ToString() + ":" + port.ToString(CultureInfo.InvariantCulture);
-            Urls.Add(url);
-        }
+    public WebServer(string host, int port, IEnumerable<DeviceDisplay> displays) {
+        Host = host;
+        Port = port;
 
         foreach (var composer in displays) {
             if (composer.DeviceId == "any") {
@@ -24,13 +22,13 @@ internal class WebServer : IDisposable {
             }
         }
 
-
         ThreadCancelSource = new CancellationTokenSource();
         Thread = new Thread(Run);
     }
 
 
-    private readonly List<string> Urls = new();
+    private readonly string Host;
+    private readonly int Port;
     private readonly DeviceDisplay? DefaultDisplay;
     private readonly Dictionary<string, DeviceDisplay> DisplaysById = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource ThreadCancelSource;
@@ -53,15 +51,14 @@ internal class WebServer : IDisposable {
     }
 
     public void Run() {
-        Log.Debug("Starting web server at " + string.Join(", ", Urls));
+        var prefix = $"http://{Host}:{Port}/";
+        Log.Debug($"Starting web server at {prefix}");
 
         using var listener = new HttpListener();
-        foreach (var url in Urls) {
-            listener.Prefixes.Add(url + "/");
-        }
+        listener.Prefixes.Add($"http://+:{Port}/");
         listener.Start();
 
-        Log.Info("Started web server at " + string.Join(", ", Urls));
+        Log.Info($"Started web server at {prefix}");
 
         var cancelToken = ThreadCancelSource.Token;
         while (!cancelToken.IsCancellationRequested) {
@@ -72,10 +69,15 @@ internal class WebServer : IDisposable {
             if (cancelToken.IsCancellationRequested) { break; }
             var context = getContextTask.Result;
 
-            Log.Verbose($"Received request at {context.Request.Url}");
             var url = context.Request.Url?.AbsolutePath;
+            Log.Verbose($"Received request for {url}");
 
-            if ("/api/setup".Equals(url, StringComparison.OrdinalIgnoreCase)) {
+            if ("/".Equals(url, StringComparison.OrdinalIgnoreCase)) {
+                context.Response.ContentType = "text/plain";
+                var buffer = Utf8.GetBytes("Hello World!");
+                context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                context.Response.OutputStream.Close();
+            } else if ("/api/setup".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 RespondToSetup(context.Request, context.Response);
             } else if ("/api/display".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 RespondToDisplay(context.Request, context.Response);

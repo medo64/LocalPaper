@@ -3,32 +3,23 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Microsoft.VisualBasic;
 
 internal static class App {
     public static void Main(string[] args) {
-        var ips = new List<IPAddress>();
-        foreach (var ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList) {
-            if (IPAddress.IsLoopback(ip)) { continue; }
-            if (ip.IsIPv6LinkLocal) { continue; }
-            if (ip.AddressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6) {
-                ips.Add(ip);
-            }
+        var host = Environment.GetEnvironmentVariable("LP_HOST") ?? Environment.MachineName;
+        if (!int.TryParse(Environment.GetEnvironmentVariable("LP_PORT"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var port) || !(port is > 0 and < 65535)) {
+            port = 8084;
         }
-
-        if (ips.Count == 0) {
-            Log.Error("No local IP address found.");
-            Environment.Exit(1);
-        }
-
-        Log.Debug($"Local IP Addresses: {string.Join(", ", ips)}");
 
         var composers = new List<DeviceDisplay>();
         composers.Add(GetComposer("any"));
 
-        using var web = new WebServer(ips, 8084, composers);
+        using var web = new WebServer(host, port, composers);
         web.Start();
 
         var cancelSource = new CancellationTokenSource();

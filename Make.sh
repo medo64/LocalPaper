@@ -362,6 +362,12 @@ make_test() {
     echo "${ANSI_MAGENTA}┗━━━━━━┛${ANSI_RESET}"
     echo
 
+    if [ ! -e "$SCRIPT_DIR/tests" ]; then
+        echo "${ANSI_YELLOW}No tests found${ANSI_RESET}" >&2
+        echo
+        return 0
+    fi
+
     ANYTHING_DONE=0
 
     for PROJECT_FILE in $(find "$SCRIPT_DIR/tests" -name "*.csproj"); do

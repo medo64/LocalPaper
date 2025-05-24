@@ -1,0 +1,9 @@
+services:
+  localpaper:
+    container_name: localpaper
+    image: medo64/localpaper:latest
+    restart: no
+    environment:
+      - LP_HOST=<ip>
+    ports:
+      - "8084:8084"
