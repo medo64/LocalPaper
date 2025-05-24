@@ -10,17 +10,17 @@ using System.Threading;
 using System.Threading.Tasks;
 
 internal class WebServer : IDisposable {
-    public WebServer(IEnumerable<IPAddress> ips, int port, IEnumerable<Composer> composers) {
+    public WebServer(IEnumerable<IPAddress> ips, int port, IEnumerable<DeviceDisplay> displays) {
         foreach (var ip in ips) {
             var url = "http://" + ip.ToString() + ":" + port.ToString(CultureInfo.InvariantCulture);
             Urls.Add(url);
         }
 
-        foreach (var composer in composers) {
+        foreach (var composer in displays) {
             if (composer.DeviceId == "any") {
-                DefaultComposer = composer;
+                DefaultDisplay = composer;
             } else {
-                ComposersById[composer.DeviceId] = composer;
+                DisplaysById[composer.DeviceId] = composer;
             }
         }
 
@@ -31,8 +31,8 @@ internal class WebServer : IDisposable {
 
 
     private readonly List<string> Urls = new();
-    private readonly Composer? DefaultComposer;
-    private readonly Dictionary<string, Composer> ComposersById = new(StringComparer.OrdinalIgnoreCase);
+    private readonly DeviceDisplay? DefaultDisplay;
+    private readonly Dictionary<string, DeviceDisplay> DisplaysById = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource ThreadCancelSource;
     private readonly Thread Thread;
     private readonly int Interval = 300;
@@ -100,8 +100,8 @@ internal class WebServer : IDisposable {
         var macAddress = request.Headers["ID"] ?? "unknown";
         var id = macAddress.Replace(":", "").ToUpperInvariant();
 
-        if (!ComposersById.TryGetValue(macAddress, out var _)) {
-            if (DefaultComposer is not null) {
+        if (!DisplaysById.TryGetValue(macAddress, out var _)) {
+            if (DefaultDisplay is not null) {
                 Log.Warning($"No composer found for ID {id} ({macAddress}), using default composer");
             } else {
                 Log.Error($"No composer found for ID {id} ({macAddress}), and no default composer is set");
@@ -131,10 +131,10 @@ internal class WebServer : IDisposable {
         var voltage = request.Headers["Battery-Voltage"] ?? "?";
         var fwVersion = request.Headers["FW-Version"] ?? "?";
 
-        if (!ComposersById.TryGetValue(id, out var composer)) {
-            if (DefaultComposer is not null) {
+        if (!DisplaysById.TryGetValue(id, out var composer)) {
+            if (DefaultDisplay is not null) {
                 Log.Info($"No composer found for ID {id}, using default composer");
-                composer = DefaultComposer;
+                composer = DefaultDisplay;
             } else {
                 Log.Warning($"No composer found for ID {id}, and no default composer is set");
                 response.StatusCode = 404;
@@ -182,9 +182,9 @@ internal class WebServer : IDisposable {
             var imageNameParts = imageName.Split('_');
             if ((imageNameParts.Length == 2) && DateTime.TryParseExact(imageNameParts[1].Replace(".bmp", ""), "yyyy-MM-dd'T'HH-mm-ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time)) {
                 var composerId = imageNameParts[0];
-                if (!ComposersById.TryGetValue(composerId, out var composer)) {
-                    if (DefaultComposer is not null) {
-                        composer = DefaultComposer;
+                if (!DisplaysById.TryGetValue(composerId, out var composer)) {
+                    if (DefaultDisplay is not null) {
+                        composer = DefaultDisplay;
                     } else {
                         Log.Warning($"No composer found for ID {composerId}, and no default composer is set");
                         response.StatusCode = 404;

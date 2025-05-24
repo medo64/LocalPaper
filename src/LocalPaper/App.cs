@@ -2,11 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-internal class App {
+internal static class App {
     public static void Main(string[] args) {
         var ips = new List<IPAddress>();
         foreach (var ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList) {
@@ -24,8 +25,8 @@ internal class App {
 
         Log.Debug($"Local IP Addresses: {string.Join(", ", ips)}");
 
-        var composers = new List<Composer>();
-        composers.Add(new Composer("any"));
+        var composers = new List<DeviceDisplay>();
+        composers.Add(GetComposer("any"));
 
         using var web = new WebServer(ips, 8084, composers);
         web.Start();
@@ -46,4 +47,13 @@ internal class App {
 
         Environment.Exit(0);
     }
+
+
+    public static DeviceDisplay GetComposer(string id) {  // TODO: currently hardcoded
+        var dateComposer = new DateComposer("yyyy-MM-dd", "dddd", "HH:mm");
+        return new DeviceDisplay("any", [
+            (new Rectangle(0, 0, 800, 48), dateComposer)
+        ]);
+    }
+
 }

@@ -1,35 +1,48 @@
 namespace LocalPaper;
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using SkiaSharp;
 
-internal class Composer {
-    public Composer(string deviceId) {
+internal class DeviceDisplay {
+    public DeviceDisplay(string deviceId, IEnumerable<(Rectangle, IComposer)> composers) {
         DeviceId = deviceId;
+        Composers = composers;
     }
 
     public string DeviceId { get; }
     private readonly int ImageWidth = 800;
     private readonly int ImageHeight = 480;
+    private readonly IEnumerable<(Rectangle, IComposer)> Composers;
 
 
     public byte[]? GetImageBytes(DateTime time) {
         using var bitmap = new SKBitmap(ImageWidth, ImageHeight);
-        Draw(bitmap);
+        Draw(bitmap, time.ToLocalTime());
         return Get1BPPImageBytes(bitmap);
     }
 
     private static SKFontManager FontManager = SKFontManager.Default;
 
-    private void Draw(SKBitmap bitmap) {
+    private void Draw(SKBitmap bitmap, DateTime time) {
+        var background = SKColors.White;
+        var foreground = SKColors.Black;
+
         using var canvas = new SKCanvas(bitmap);
-        using var paint = new SKPaint() { Color = SKColors.White, };
-        canvas.Clear(SKColors.Black);
+        using var paint = new SKPaint() { Color = background };
+        canvas.Clear(foreground);
 
         var font = FontManager.MatchFamily("Arial").ToFont(42);
         font.Edging = SKFontEdging.Alias;
         font.Hinting = SKFontHinting.Normal;
+
+        foreach (var (rect, composer) in Composers) {
+            using var subBitmap = new SKBitmap(rect.Width, rect.Height);
+            composer.Draw(subBitmap, background, foreground, time);
+            canvas.DrawBitmap(subBitmap, new SKPoint(rect.Location.X, rect.Location.Y));
+        }
 
         var x = ImageWidth / 2;
         var y = ImageHeight / 2 - (font.Metrics.Ascent + font.Metrics.Descent) / 2;
