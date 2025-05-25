@@ -7,17 +7,23 @@ using System.IO;
 using SkiaSharp;
 
 internal class DeviceDisplay {
-    public DeviceDisplay(string deviceId, IEnumerable<(Rectangle, IComposer)> composers, TimeZoneInfo timeZone) {
+    public DeviceDisplay(string deviceId, TimeSpan interval, int imageWidth, int imageHeight, bool isInverted, TimeZoneInfo timeZone, IEnumerable<(Rectangle, IComposer)> composers) {
         DeviceId = deviceId;
-        Composers = composers;
+        ImageWidth = imageWidth;
+        ImageHeight = imageHeight;
+        IsInverted = isInverted;
         TimeZone = timeZone;
+        Composers = composers;
     }
 
     public string DeviceId { get; }
-    private readonly int ImageWidth = 800;
-    private readonly int ImageHeight = 480;
-    private readonly IEnumerable<(Rectangle, IComposer)> Composers;
+    public TimeSpan Interval{ get; }
+
+    private readonly int ImageWidth;
+    private readonly int ImageHeight;
+    private readonly bool IsInverted;
     private readonly TimeZoneInfo TimeZone;
+    private readonly IEnumerable<(Rectangle, IComposer)> Composers;
 
 
     public byte[]? GetImageBytes(DateTime time) {
@@ -26,29 +32,19 @@ internal class DeviceDisplay {
         return Get1BPPImageBytes(bitmap);
     }
 
-    private static SKFontManager FontManager = SKFontManager.Default;
-
     private void Draw(SKBitmap bitmap, DateTime time) {
-        var background = SKColors.White;
-        var foreground = SKColors.Black;
+        var background = IsInverted ? SKColors.Black : SKColors.White;
+        var foreground = IsInverted ? SKColors.White : SKColors.Black;
 
         using var canvas = new SKCanvas(bitmap);
-        using var paint = new SKPaint() { Color = background };
-        canvas.Clear(foreground);
-
-        var font = FontManager.MatchFamily("DejaVu Sans").ToFont(42);
-        font.Edging = SKFontEdging.Alias;
-        font.Hinting = SKFontHinting.Normal;
+        using var paint = new SKPaint() { Color = foreground };
+        canvas.Clear(background);
 
         foreach (var (rect, composer) in Composers) {
             using var subBitmap = new SKBitmap(rect.Width, rect.Height);
             composer.Draw(subBitmap, background, foreground, time);
             canvas.DrawBitmap(subBitmap, new SKPoint(rect.Location.X, rect.Location.Y));
         }
-
-        var x = ImageWidth / 2;
-        var y = ImageHeight / 2 - (font.Metrics.Ascent + font.Metrics.Descent) / 2;
-        canvas.DrawText("Hello World!", x, y, SKTextAlign.Center, font, paint);
     }
 
     private byte[] Get1BPPImageBytes(SKBitmap bitmap) {

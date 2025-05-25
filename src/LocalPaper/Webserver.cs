@@ -10,16 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 internal class WebServer : IDisposable {
-    public WebServer(string host, int port, IEnumerable<DeviceDisplay> displays) {
+    public WebServer(string host, int port, DeviceDisplay? defaultDisplay, IEnumerable<DeviceDisplay> displays) {
         Host = host;
         Port = port;
 
-        foreach (var composer in displays) {
-            if (composer.DeviceId == "any") {
-                DefaultDisplay = composer;
-            } else {
-                DisplaysById[composer.DeviceId] = composer;
-            }
+        DefaultDisplay = defaultDisplay;
+        foreach (var display in displays) {
+            DisplaysById[display.DeviceId] = display;
         }
 
         ThreadCancelSource = new CancellationTokenSource();
@@ -33,7 +30,6 @@ internal class WebServer : IDisposable {
     private readonly Dictionary<string, DeviceDisplay> DisplaysById = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource ThreadCancelSource;
     private readonly Thread Thread;
-    private readonly int Interval = 300;
 
 
     public void Start() {
@@ -133,10 +129,10 @@ internal class WebServer : IDisposable {
         var voltage = request.Headers["Battery-Voltage"] ?? "?";
         var fwVersion = request.Headers["FW-Version"] ?? "?";
 
-        if (!DisplaysById.TryGetValue(id, out var composer)) {
+        if (!DisplaysById.TryGetValue(id, out var display)) {
             if (DefaultDisplay is not null) {
                 Log.Info($"No composer found for ID {id}, using default composer");
-                composer = DefaultDisplay;
+                display = DefaultDisplay;
             } else {
                 Log.Warning($"No composer found for ID {id}, and no default composer is set");
                 response.StatusCode = 404;
@@ -145,22 +141,23 @@ internal class WebServer : IDisposable {
             }
         }
 
+        var interval = (int)display.Interval.TotalSeconds;
         var timeNow = DateTime.UtcNow;
         var ticksCurr = DateTime.UtcNow.Ticks;
-        ticksCurr /= 10_000_000L * Interval;
-        ticksCurr *= 10_000_000L * Interval;
+        ticksCurr /= 10_000_000L * interval;
+        ticksCurr *= 10_000_000L * interval;
         var timeCurr = new DateTime(ticksCurr, DateTimeKind.Utc);  // round to the nearest interval
-        var timeNext = timeCurr.AddSeconds(Interval);
+        var timeNext = timeCurr.AddSeconds(interval);
         var nextInterval = (int)(timeNext - timeNow).TotalSeconds;
         if (nextInterval < 60) {  // don't bother adjusting for this, just show it now
             Log.Debug($"Interval skipped for {id} (using the following interval instead)");
-            timeCurr = timeCurr.AddSeconds(Interval);
-            timeNext = timeCurr.AddSeconds(Interval);
-            nextInterval = Interval + 30;
+            timeCurr = timeCurr.AddSeconds(interval);
+            timeNext = timeCurr.AddSeconds(interval);
+            nextInterval = interval + 30;
         }
 
         var prefix = request.Url?.GetLeftPart(UriPartial.Authority);
-        var fileName = composer.DeviceId + "_" + timeCurr.ToString("yyyy-MM-dd'T'HH-mm-ss", CultureInfo.InvariantCulture) + ".bmp";
+        var fileName = display.DeviceId + "_" + timeCurr.ToString("yyyy-MM-dd'T'HH-mm-ss", CultureInfo.InvariantCulture) + ".bmp";
         var imageUrl = prefix + "/" + fileName;
         int refreshRate = nextInterval;
 
