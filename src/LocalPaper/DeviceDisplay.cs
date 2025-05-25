@@ -7,20 +7,22 @@ using System.IO;
 using SkiaSharp;
 
 internal class DeviceDisplay {
-    public DeviceDisplay(string deviceId, IEnumerable<(Rectangle, IComposer)> composers) {
+    public DeviceDisplay(string deviceId, IEnumerable<(Rectangle, IComposer)> composers, TimeZoneInfo timeZone) {
         DeviceId = deviceId;
         Composers = composers;
+        TimeZone = timeZone;
     }
 
     public string DeviceId { get; }
     private readonly int ImageWidth = 800;
     private readonly int ImageHeight = 480;
     private readonly IEnumerable<(Rectangle, IComposer)> Composers;
+    private readonly TimeZoneInfo TimeZone;
 
 
     public byte[]? GetImageBytes(DateTime time) {
         using var bitmap = new SKBitmap(ImageWidth, ImageHeight);
-        Draw(bitmap, time.ToLocalTime());
+        Draw(bitmap, TimeZoneInfo.ConvertTime(time, TimeZone));
         return Get1BPPImageBytes(bitmap);
     }
 
