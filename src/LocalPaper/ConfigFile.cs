@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Medo.Configuration;
+using SkiaSharp;
 
 internal class ConfigFile {
 
@@ -31,6 +32,10 @@ internal class ConfigFile {
         return false;
     }
 
+    internal IEnumerable<string> GetSections() {
+        return Sections.Keys;
+    }
+
 
     public string? Consume(string section, string key) {
         if (Sections.TryGetValue(section, out var sectionDict) && sectionDict.TryGetValue(key, out var value)) {
@@ -48,6 +53,13 @@ internal class ConfigFile {
         return defaultValue;
     }
 
+    public bool Consume(string section, string key, bool defaultValue) {
+        if ((Consume(section, key) is string value) && bool.TryParse(value, out var boolValue)) {
+            return boolValue;
+        }
+        return defaultValue;
+    }
+
     public int Consume(string section, string key, int defaultValue) {
         if ((Consume(section, key) is string value) && int.TryParse(value, out var intValue)) {
             return intValue;
@@ -55,10 +67,26 @@ internal class ConfigFile {
         return defaultValue;
     }
 
-    public bool Consume(string section, string key, bool defaultValue) {
-        if ((Consume(section, key) is string value) && bool.TryParse(value, out var boolValue)) {
-            return boolValue;
+    public int Consume(string section, string key, int defaultValue, int minValue, int maxValue) {
+        if ((Consume(section, key) is string value) && int.TryParse(value, out var intValue)) {
+            if (intValue < minValue) { return minValue; }
+            if (intValue > maxValue) { return maxValue; }
+            return intValue;
         }
         return defaultValue;
     }
+
+    public SKTextAlign Consume(string section, string key, SKTextAlign defaultValue) {
+        if (Consume(section, key) is string value) {
+            if (value.Equals("center", StringComparison.OrdinalIgnoreCase)) {
+                return SKTextAlign.Center;
+            } else if (value.Equals("left", StringComparison.OrdinalIgnoreCase)) {
+                return SKTextAlign.Left;
+            } else if (value.Equals("right", StringComparison.OrdinalIgnoreCase)) {
+                return SKTextAlign.Right;
+            }
+        }
+        return defaultValue;
+    }
+
 }

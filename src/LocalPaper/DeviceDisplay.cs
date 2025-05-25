@@ -7,7 +7,7 @@ using System.IO;
 using SkiaSharp;
 
 internal class DeviceDisplay {
-    public DeviceDisplay(string deviceId, TimeSpan interval, int imageWidth, int imageHeight, bool isInverted, TimeZoneInfo timeZone, IEnumerable<(Rectangle, IComposer)> composers) {
+    public DeviceDisplay(string deviceId, TimeSpan interval, int imageWidth, int imageHeight, bool isInverted, TimeZoneInfo timeZone, IEnumerable<ComposerBag> composers) {
         DeviceId = deviceId;
         ImageWidth = imageWidth;
         ImageHeight = imageHeight;
@@ -17,13 +17,13 @@ internal class DeviceDisplay {
     }
 
     public string DeviceId { get; }
-    public TimeSpan Interval{ get; }
+    public TimeSpan Interval { get; }
 
     private readonly int ImageWidth;
     private readonly int ImageHeight;
     private readonly bool IsInverted;
     private readonly TimeZoneInfo TimeZone;
-    private readonly IEnumerable<(Rectangle, IComposer)> Composers;
+    private readonly IEnumerable<ComposerBag> Composers;
 
 
     public byte[]? GetImageBytes(DateTime time) {
@@ -33,17 +33,16 @@ internal class DeviceDisplay {
     }
 
     private void Draw(SKBitmap bitmap, DateTime time) {
-        var background = IsInverted ? SKColors.Black : SKColors.White;
-        var foreground = IsInverted ? SKColors.White : SKColors.Black;
+        var displayBackground = IsInverted ? SKColors.Black : SKColors.White;
 
         using var canvas = new SKCanvas(bitmap);
-        using var paint = new SKPaint() { Color = foreground };
-        canvas.Clear(background);
+        canvas.Clear(displayBackground);
 
-        foreach (var (rect, composer) in Composers) {
-            using var subBitmap = new SKBitmap(rect.Width, rect.Height);
-            composer.Draw(subBitmap, background, foreground, time);
-            canvas.DrawBitmap(subBitmap, new SKPoint(rect.Location.X, rect.Location.Y));
+        foreach (var composerBag in Composers) {
+            var color = composerBag.IsInverted ? SKColors.White : SKColors.Black;
+            using var subBitmap = new SKBitmap(composerBag.Rectangle.Width, composerBag.Rectangle.Height);
+            composerBag.Composer.Draw(subBitmap, color, time);
+            canvas.DrawBitmap(subBitmap, new SKPoint(composerBag.Rectangle.Left, composerBag.Rectangle.Top));
         }
     }
 

@@ -2,7 +2,7 @@ services:
   localpaper:
     container_name: localpaper
     image: medo64/localpaper:latest
-    restart: no
+    restart: unless-stopped
     environment:
       - LP_HOST=<ip>
     ports:

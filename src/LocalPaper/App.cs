@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using SkiaSharp;
 
 internal static class App {
     public static void Main(string[] args) {
@@ -106,7 +107,7 @@ internal static class App {
 
         var displayWidth = config.Consume("Display", "Width", 800);
         var displayHeight = config.Consume("Display", "Height", 480);
-        var isInverted = config.Consume("Display", "Inverted", false);
+        var displayIsInverted = config.Consume("Display", "Inverted", false);
 
         var timeZoneId = config.Consume("Display", "TimeZone", defaultTimeZone.Id);
         TimeZoneInfo timeZone = defaultTimeZone;
@@ -124,10 +125,53 @@ internal static class App {
 
         Log.Info($"Display '{displayId}' is {displayWidth}x{displayHeight}; interval: {interval} seconds; time zone: {timeZone.Id}");
 
-        var dateComposer = new DateComposer("yyyy-MM-dd", "dddd", "HH:mm");
-        return new DeviceDisplay(displayId, TimeSpan.FromSeconds(interval), displayWidth, displayHeight, isInverted, timeZone, [
-            (new Rectangle(0, 0, 800, 48), dateComposer)
-        ]);
+        var composers = new List<ComposerBag>();
+        foreach (var section in config.GetSections()) {
+            var kind = section.Split(['.', ':', ' '])[0];
+
+            var left = config.Consume(section, "Left", 0, 0, displayWidth - 1);
+            var right = config.Consume(section, "Right", displayWidth - 1, 0, displayWidth - 1);
+            var top = config.Consume(section, "Top", 0, 0, displayHeight - 1);
+            var bottom = config.Consume(section, "Bottom", displayHeight - 1, 0, displayHeight - 1);
+            if (left < 0 || left > right || right >= displayWidth || top < 0 || top > bottom || bottom >= displayHeight) {
+                Log.Warning($"Display '{displayId}' in section '{section}' has an invalid rectangle ({left}, {top}, {right}, {bottom}), skipping");
+                continue;
+            }
+            var rect = new Rectangle(left, top, right - left + 1, bottom - top + 1);
+            var isInverted = config.Consume(section, "Inverted", false);
+
+            if ("Line".Equals(kind, StringComparison.Ordinal)) {
+                var thickness = config.Consume(section, "Thickness", 1, 1, 100);
+                composers.Add(new ComposerBag(
+                    section,
+                    new LineComposer(thickness),
+                    rect,
+                    isInverted
+                ));
+            } else if ("Rectangle".Equals(kind, StringComparison.Ordinal)) {
+                composers.Add(new ComposerBag(
+                    section,
+                    new RectangleComposer(),
+                    rect,
+                    isInverted
+                ));
+            } else if ("Time".Equals(kind, StringComparison.Ordinal)) {
+                var format = config.Consume(section, "Format", "dddd");
+                var align = config.Consume(section, "Align", SKTextAlign.Center);
+                composers.Add(new ComposerBag(
+                    section,
+                    new TimeComposer(format, align),
+                    rect,
+                    isInverted
+                ));
+            } else {
+                Log.Warning($"Display {displayId} has unknown section '{section}'; skipping");
+                continue;
+            }
+            Log.Info($"Display '{displayId}' composer '{kind}' in section '{section}' at ({left}, {top}, {right}, {bottom})");
+        }
+
+        return new DeviceDisplay(displayId, TimeSpan.FromSeconds(interval), displayWidth, displayHeight, displayIsInverted, timeZone, composers);
     }
 
 }
