@@ -18,6 +18,9 @@ COPY src/LocalPaper.Docker/bash-default.sh /etc/bash/default.sh
 # Helper packages
 RUN apk add bind-tools
 
+# SkiaSharp packages
+RUN apk add fontconfig ttf-dejavu
+
 # Executables
 WORKDIR /app/bin
 COPY bin/linux-musl-x64/LocalPaper      ./

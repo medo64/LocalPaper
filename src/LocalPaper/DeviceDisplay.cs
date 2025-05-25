@@ -34,7 +34,7 @@ internal class DeviceDisplay {
         using var paint = new SKPaint() { Color = background };
         canvas.Clear(foreground);
 
-        var font = FontManager.MatchFamily("Arial").ToFont(42);
+        var font = FontManager.MatchFamily("DejaVu Sans").ToFont(42);
         font.Edging = SKFontEdging.Alias;
         font.Hinting = SKFontHinting.Normal;
 

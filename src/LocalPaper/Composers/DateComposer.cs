@@ -29,7 +29,7 @@ internal class DateComposer : IComposer {
 
         var margin = 8;
 
-        var font = FontManager.MatchFamily("Arial").ToFont(bitmap.Height - margin * 2);
+        var font = FontManager.MatchFamily("DejaVu Sans").ToFont(bitmap.Height - margin * 2);
         font.Edging = SKFontEdging.Alias;
         font.Hinting = SKFontHinting.Normal;
 

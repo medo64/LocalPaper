@@ -200,7 +200,7 @@ internal class WebServer : IDisposable {
         }
 
         if (buffer == null) {
-            Log.Warning($"No file at named {imageName}");
+            Log.Warning($"No file named {imageName}");
             response.StatusCode = 404;
             response.Close();
             return;
