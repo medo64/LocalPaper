@@ -192,6 +192,17 @@ internal static class App {
                     isInverted,
                     offset
                 ));
+            } else if ("Text".Equals(kind, StringComparison.Ordinal)) {
+                var text = config.Consume(section, "Text", "");
+                var hAlign = config.Consume(section, "HAlign", SKTextAlign.Center);
+                var vAlign = config.Consume(section, "VAlign", VerticalAlignment.Middle);
+                composers.Add(new ComposerBag(
+                    section,
+                    new TextComposer(text, hAlign, vAlign),
+                    rect,
+                    isInverted,
+                    offset
+                ));
             } else if ("Time".Equals(kind, StringComparison.Ordinal)) {
                 var format = config.Consume(section, "Format", "dddd");
                 var align = config.Consume(section, "Align", SKTextAlign.Center);

@@ -87,12 +87,13 @@ If you need to use the same composer multiple times, use a `.` followed by any c
 
 The following composers are currently available:
 
-| Composer  | Extra                | Description                                        |
-|-----------|----------------------|----------------------------------------------------|
-| Events    | (subdirectory)       | Shows list of events based on subdirectory entries |
-| Line      | `Thickness`          | Draws a line                                       |
-| Rectangle | `Filled` `Thickness` | Draws a rectangle                                  |
-| Time      | `Align` `Format`     | Shows time                                         |
+| Composer  | Extra                    | Description                                        |
+|-----------|--------------------------|----------------------------------------------------|
+| Events    | (subdirectory)           | Shows list of events based on subdirectory entries |
+| Line      | `Thickness`              | Draws a line                                       |
+| Rectangle | `Filled` `Thickness`     | Draws a rectangle                                  |
+| Text      | `Text` `HAlign` `VAlign` | Shows text                                         |
+| Time      | `Format` `Align`         | Shows time                                         |
 
 For events, configuration format is as follows:
 

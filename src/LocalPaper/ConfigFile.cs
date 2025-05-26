@@ -87,4 +87,17 @@ internal class ConfigFile {
         return defaultValue;
     }
 
+    public VerticalAlignment Consume(string section, string key, VerticalAlignment defaultValue) {
+        if (Consume(section, key) is string value) {
+            if (value.Equals("middle", StringComparison.OrdinalIgnoreCase)) {
+                return VerticalAlignment.Middle;
+            } else if (value.Equals("top", StringComparison.OrdinalIgnoreCase)) {
+                return VerticalAlignment.Top;
+            } else if (value.Equals("bottom", StringComparison.OrdinalIgnoreCase)) {
+                return VerticalAlignment.Bottom;
+            }
+        }
+        return defaultValue;
+    }
+
 }
