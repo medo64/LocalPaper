@@ -6,11 +6,13 @@ using SkiaSharp;
 
 internal sealed class EventsComposer : IComposer {
 
-    public EventsComposer(DirectoryInfo directory) {
+    public EventsComposer(DirectoryInfo directory, TimeSpan offset) {
         Directory = directory;
+        Offset = offset;
     }
 
     private readonly DirectoryInfo Directory;
+    private readonly TimeSpan Offset;
 
 
     #region IComposer
@@ -25,7 +27,7 @@ internal sealed class EventsComposer : IComposer {
 
         var y = clipRect.Top - font.Metrics.Ascent;
         var lastKey = string.Empty;
-        foreach (var kvp in Helpers.GetConfigEntries(Directory, DateOnly.FromDateTime(time))) {
+        foreach (var kvp in Helpers.GetConfigEntries(Directory, DateOnly.FromDateTime(time.AddSeconds(Offset.TotalSeconds)))) {
             if (!kvp.Key.Equals(lastKey)) {
                 if (!string.IsNullOrEmpty(lastKey)) { y += clipRect.Top; }
                 canvas.DrawText(kvp.Key, clipRect.Left, y, SKTextAlign.Left, fontBold, paint);

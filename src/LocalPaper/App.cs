@@ -146,9 +146,10 @@ internal static class App {
                     Log.Warning($"Display '{displayId}' composer 'Events' in section '{section}' at ({left}, {top}, {right}, {bottom}) has non-existing directory '{directory.FullName}'; skipping");
                     continue;
                 }
+                var offset = TimeSpan.FromHours(config.Consume(section, "Offset", 0));
                 composers.Add(new ComposerBag(
                     section,
-                    new EventsComposer(directory),
+                    new EventsComposer(directory, offset),
                     rect,
                     isInverted
                 ));
