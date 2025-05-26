@@ -3,7 +3,6 @@ namespace LocalPaper;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Medo.Configuration;
 
 internal static class Helpers {
 

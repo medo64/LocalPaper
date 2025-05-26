@@ -1,11 +1,4 @@
-/* Josip Medved <jmedved@jmedved.com> * www.medo64.com * MIT License */
-
-//2022-04-07: Minor refactoring
-//2021-11-25: Refactored to use pattern matching
-//2021-09-28: Added constructor for empty instance
-//2021-09-26: Initial version
-
-namespace Medo.Configuration;
+namespace LocalPaper;
 
 using System;
 using System.Collections.Generic;
@@ -191,7 +184,7 @@ public class IniFile {
                                 lastSection = line[1..].Trim();
                             }
                         } else {  // key value
-                            var parts = line.Split(new char[] { ':', '=' }, 2);
+                            var parts = line.Split(new char[] { '=' }, 2);
                             if (parts.Length == 2) {  // ignore lines that don't have both key and value
                                 var key = parts[0]?.Trim() ?? "";
                                 if (!key.Contains('#')) {  // make sure comment doesn't start in key
