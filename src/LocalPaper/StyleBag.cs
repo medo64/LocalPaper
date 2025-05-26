@@ -26,19 +26,19 @@ internal sealed record StyleBag : IDisposable {
 
     public SKColor Color { get; }
 
-    public SKFont GetFont(int fontSize = 14) {
+    public SKFont GetFont(int fontSize = 16) {
         return GetFont(NormalFamily, fontSize);
     }
 
-    public SKFont GetBoldFont(int fontSize = 14) {
+    public SKFont GetBoldFont(int fontSize = 16) {
         return GetFont(BoldFamily, fontSize);
     }
 
-    public SKFont GetItalicFont(int fontSize = 14) {
+    public SKFont GetItalicFont(int fontSize = 16) {
         return GetFont(ItalicFamily, fontSize);
     }
 
-    private static SKFont GetFont(SKTypeface fontFamily, int fontSize = 14) {
+    private static SKFont GetFont(SKTypeface fontFamily, int fontSize) {
         return new SKFont(fontFamily) {
             Size = fontSize,
             Edging = SKFontEdging.Alias,
