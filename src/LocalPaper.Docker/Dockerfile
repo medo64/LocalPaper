@@ -16,7 +16,7 @@ RUN apk add bash
 COPY src/LocalPaper.Docker/bash-default.sh /etc/bash/default.sh
 
 # Helper packages
-RUN apk add bind-tools
+RUN apk add bind-tools tzdata
 
 # SkiaSharp packages
 RUN apk add fontconfig ttf-dejavu
