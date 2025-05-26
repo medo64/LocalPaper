@@ -26,15 +26,15 @@ internal sealed record StyleBag : IDisposable {
 
     public SKColor Color { get; }
 
-    public SKFont GetFont(int fontSize = 16) {
+    public SKFont GetFont(int fontSize = 20) {
         return GetFont(NormalFamily, fontSize);
     }
 
-    public SKFont GetBoldFont(int fontSize = 16) {
+    public SKFont GetBoldFont(int fontSize = 20) {
         return GetFont(BoldFamily, fontSize);
     }
 
-    public SKFont GetItalicFont(int fontSize = 16) {
+    public SKFont GetItalicFont(int fontSize = 20) {
         return GetFont(ItalicFamily, fontSize);
     }
 

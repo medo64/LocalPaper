@@ -22,20 +22,20 @@ internal sealed class EventsComposer : IComposer {
         canvas.ClipRect(clipRect);
         using var paint = new SKPaint() { Color = style.Color };
 
-        using var font = style.GetFont();
-        using var fontBold = style.GetBoldFont();
+        using var fontHead = style.GetFont();
+        using var fontText = style.GetBoldFont();
 
-        var y = clipRect.Top - font.Metrics.Ascent;
+        var y = (int)(clipRect.Top - fontText.Metrics.Ascent);
         var lastKey = string.Empty;
         foreach (var kvp in Helpers.GetConfigEntries(Directory, DateOnly.FromDateTime(time.AddSeconds(Offset.TotalSeconds)))) {
             if (!kvp.Key.Equals(lastKey)) {
-                if (!string.IsNullOrEmpty(lastKey)) { y += clipRect.Top; }
-                canvas.DrawText(kvp.Key, clipRect.Left, y, SKTextAlign.Left, fontBold, paint);
-                y += font.Metrics.Descent - font.Metrics.Ascent;
+                if (!string.IsNullOrEmpty(lastKey)) { y += (int)clipRect.Top; }
+                canvas.DrawText(kvp.Key, clipRect.Left, y, SKTextAlign.Left, fontHead, paint);
+                y += (int)(fontText.Metrics.Descent - fontText.Metrics.Ascent);
                 lastKey = kvp.Key;
             }
-            canvas.DrawText(kvp.Value, clipRect.Left, y, SKTextAlign.Left, font, paint);
-            y += font.Metrics.Descent - font.Metrics.Ascent;
+            canvas.DrawText(kvp.Value, clipRect.Left, y, SKTextAlign.Left, fontText, paint);
+            y += (int)(fontText.Metrics.Descent - fontText.Metrics.Ascent);
         }
     }
 
