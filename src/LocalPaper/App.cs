@@ -181,7 +181,7 @@ internal static class App {
                 Log.Warning($"Display {displayId} has unknown section '{section}'; skipping");
                 continue;
             }
-            Log.Info($"Display '{displayId}' composer '{kind}' in section '{section}' at ({left}, {top}, {right}, {bottom})");
+            Log.Debug($"Display '{displayId}' composer '{kind}' in section '{section}' at ({left}, {top}, {right}, {bottom})");
         }
 
         return new DeviceDisplay(displayId, TimeSpan.FromSeconds(interval), displayWidth, displayHeight, displayIsInverted, timeZone, composers);
