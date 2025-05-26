@@ -26,6 +26,7 @@ internal class DeviceDisplay {
     private readonly IEnumerable<ComposerBag> Composers;
 
 
+
     public byte[]? GetImageBytes(DateTime time) {
         using var bitmap = new SKBitmap(ImageWidth, ImageHeight);
         Draw(bitmap, TimeZoneInfo.ConvertTime(time, TimeZone));
@@ -39,9 +40,20 @@ internal class DeviceDisplay {
         canvas.Clear(displayBackground);
 
         foreach (var composerBag in Composers) {
-            var color = composerBag.IsInverted ? SKColors.White : SKColors.Black;
             using var subBitmap = new SKBitmap(composerBag.Rectangle.Width, composerBag.Rectangle.Height);
-            composerBag.Composer.Draw(subBitmap, color, time);
+            var margin = 4;
+            var innerLeft = composerBag.Rectangle.Width >= margin * 4 ? margin : 0;
+            var innerWidth = composerBag.Rectangle.Width >= margin * 4 ? composerBag.Rectangle.Width - margin * 2 : composerBag.Rectangle.Width;
+            var innerTop = composerBag.Rectangle.Height >= margin * 4 ? margin : 0;
+            var innerHeight = composerBag.Rectangle.Height >= margin * 4 ? composerBag.Rectangle.Height - margin * 2 : composerBag.Rectangle.Height;
+            var rect = new SKRect(innerLeft, innerTop, innerWidth, innerHeight
+            );
+            using var style = new StyleBag(
+                composerBag.IsInverted ? SKColors.White : SKColors.Black,
+                "DejaVu Sans"
+            );
+            composerBag.Composer.Draw(subBitmap, rect, style, time);
+
             canvas.DrawBitmap(subBitmap, new SKPoint(composerBag.Rectangle.Left, composerBag.Rectangle.Top));
         }
     }

@@ -54,10 +54,10 @@ internal static class App {
             if (anyConfigAlt.Exists) {
                 Log.Warning($"Ignoring alternative wildcard configuration file '{anyConfigAlt.FullName}'");
             }
-            defaultDisplay = GetDisplay("any", anyConfig, defaultTimeZone);
+            defaultDisplay = GetDisplay("any", configDirInfo, anyConfig, defaultTimeZone);
         } else if (anyConfigAlt.Exists) {
             Log.Info($"Using alternate wildcard configuration from '{anyConfig.FullName}'");
-            defaultDisplay = GetDisplay("any", anyConfigAlt, defaultTimeZone);
+            defaultDisplay = GetDisplay("any", configDirInfo, anyConfigAlt, defaultTimeZone);
         }
 
         foreach (var directory in configDirInfo.EnumerateDirectories()) {
@@ -69,7 +69,7 @@ internal static class App {
                 Log.Warning($"Device {deviceId} does not contain a configuration file 'config.ini'");
                 continue;
             }
-            defaultDisplay = GetDisplay(deviceId, deviceConfig, defaultTimeZone);
+            defaultDisplay = GetDisplay(deviceId, configDirInfo, deviceConfig, defaultTimeZone);
         }
 
 
@@ -96,7 +96,7 @@ internal static class App {
     }
 
 
-    public static DeviceDisplay GetDisplay(string displayId, FileInfo configFile, TimeZoneInfo defaultTimeZone) {  // TODO: currently hardcoded
+    public static DeviceDisplay GetDisplay(string displayId, DirectoryInfo configDirectory, FileInfo configFile, TimeZoneInfo defaultTimeZone) {  // TODO: currently hardcoded
         var config = new ConfigFile(configFile);
 
         var interval = config.Consume("Display", "Interval", 600);
@@ -140,7 +140,19 @@ internal static class App {
             var rect = new Rectangle(left, top, right - left + 1, bottom - top + 1);
             var isInverted = config.Consume(section, "Inverted", false);
 
-            if ("Line".Equals(kind, StringComparison.Ordinal)) {
+            if ("Events".Equals(kind, StringComparison.Ordinal) || "Event".Equals(kind, StringComparison.Ordinal)) {
+                var directory = new DirectoryInfo(Path.Combine(configDirectory.FullName, displayId, config.Consume(section, "Directory", section)));
+                if (!directory.Exists) {
+                    Log.Warning($"Display '{displayId}' composer 'Events' in section '{section}' at ({left}, {top}, {right}, {bottom}) has non-existing directory '{directory.FullName}'; skipping");
+                    continue;
+                }
+                composers.Add(new ComposerBag(
+                    section,
+                    new EventsComposer(directory),
+                    rect,
+                    isInverted
+                ));
+            } else if ("Line".Equals(kind, StringComparison.Ordinal)) {
                 var thickness = config.Consume(section, "Thickness", 1, 1, 100);
                 composers.Add(new ComposerBag(
                     section,

@@ -1,10 +1,9 @@
 namespace LocalPaper;
 
 using System;
-using System.Drawing;
 using SkiaSharp;
 
-internal class TimeComposer : IComposer {
+internal sealed class TimeComposer : IComposer {
 
 
     public TimeComposer(string textFormat, SKTextAlign textAlign) {
@@ -16,22 +15,15 @@ internal class TimeComposer : IComposer {
     private readonly string TextFormat;
     private readonly SKTextAlign TextAlign;
 
-    private static SKFontManager FontManager = SKFontManager.Default;
-
 
     #region IComposer
 
-    public Rectangle Rectangle { get; }
-
-    public void Draw(SKBitmap bitmap, SKColor color, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
         using var canvas = new SKCanvas(bitmap);
-        using var paint = new SKPaint() { Color = color };
+        using var paint = new SKPaint() { Color = style.Color };
 
         var margin = 8;
-
-        var font = FontManager.MatchFamily("DejaVu Sans").ToFont(bitmap.Height - margin * 2);
-        font.Edging = SKFontEdging.Alias;
-        font.Hinting = SKFontHinting.Normal;
+        using var font = style.GetFont(bitmap.Height - margin * 2);
 
         var centerY = bitmap.Height / 2 - (font.Metrics.Ascent + font.Metrics.Descent) / 2;
         switch (TextAlign) {

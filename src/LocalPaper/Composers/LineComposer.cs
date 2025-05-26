@@ -3,7 +3,7 @@ namespace LocalPaper;
 using System;
 using SkiaSharp;
 
-internal class LineComposer : IComposer {
+internal sealed class LineComposer : IComposer {
 
 
     public LineComposer(int thickness) {
@@ -15,9 +15,9 @@ internal class LineComposer : IComposer {
 
     #region IComposer
 
-    public void Draw(SKBitmap bitmap, SKColor color, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
         using var canvas = new SKCanvas(bitmap);
-        using var paint = new SKPaint() { Color = color, StrokeWidth = Thickness };
+        using var paint = new SKPaint() { Color = style.Color, StrokeWidth = Thickness };
         canvas.DrawLine(0, 0, bitmap.Width - 1, bitmap.Height - 1, paint);
     }
 
