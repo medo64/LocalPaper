@@ -125,7 +125,7 @@ internal class WebServer : IDisposable {
     }
 
     private void RespondToDisplay(HttpListenerRequest request, HttpListenerResponse response) {
-        var id = request.Headers["ID"] ?? "unknown";
+        var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant() ?? "unknown";
         var voltage = request.Headers["Battery-Voltage"] ?? "?";
         var fwVersion = request.Headers["FW-Version"] ?? "?";
 
