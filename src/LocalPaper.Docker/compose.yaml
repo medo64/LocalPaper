@@ -4,6 +4,12 @@ services:
     image: medo64/localpaper:latest
     restart: unless-stopped
     environment:
-      - LP_HOST=<ip>
+      - LP_HOST=<externalip>
+      - LP_TIMEZONE=America/Los_Angeles
     ports:
       - "8084:8084"
+    volumes:
+      - type: bind
+        source: <directory>
+        target: /config
+        read_only: true
