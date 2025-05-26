@@ -21,6 +21,10 @@ RUN apk add bind-tools tzdata
 # SkiaSharp packages
 RUN apk add fontconfig ttf-dejavu
 
+# Example
+WORKDIR /app/example/any
+COPY example/any/* ./
+
 # Executables
 WORKDIR /app/bin
 COPY bin/linux-musl-x64/LocalPaper      ./
@@ -35,6 +39,10 @@ RUN chmod +x entrypoint
 
 # Adjust permissions
 RUN chown -R $UID:$UID /app
+
+# Config
+WORKDIR /config
+RUN chown -R $UID:$UID /config
 
 # User
 RUN addgroup -g $UID $UNAME
