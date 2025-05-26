@@ -9,6 +9,7 @@ using SkiaSharp;
 internal class DeviceDisplay {
     public DeviceDisplay(string deviceId, TimeSpan interval, int imageWidth, int imageHeight, bool isInverted, TimeZoneInfo timeZone, IEnumerable<ComposerBag> composers) {
         DeviceId = deviceId;
+        Interval = interval;
         ImageWidth = imageWidth;
         ImageHeight = imageHeight;
         IsInverted = isInverted;
