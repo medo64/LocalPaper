@@ -183,9 +183,11 @@ internal static class App {
                     offset
                 ));
             } else if ("Rectangle".Equals(kind, StringComparison.Ordinal)) {
+                var thickness = config.Consume(section, "Thickness", 1, 1, 100);
+                var filled = config.Consume(section, "Filled", false);
                 composers.Add(new ComposerBag(
                     section,
-                    new RectangleComposer(),
+                    new RectangleComposer(thickness, filled),
                     rect,
                     isInverted,
                     offset
