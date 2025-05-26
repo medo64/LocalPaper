@@ -205,10 +205,11 @@ internal static class App {
                 ));
             } else if ("Time".Equals(kind, StringComparison.Ordinal)) {
                 var format = config.Consume(section, "Format", "dddd");
-                var align = config.Consume(section, "Align", SKTextAlign.Center);
+                var hAlign = config.Consume(section, "HAlign", SKTextAlign.Center);
+                var vAlign = config.Consume(section, "VAlign", VerticalAlignment.Middle);
                 composers.Add(new ComposerBag(
                     section,
-                    new TimeComposer(format, align),
+                    new TimeComposer(format, hAlign, vAlign),
                     rect,
                     isInverted,
                     offset
