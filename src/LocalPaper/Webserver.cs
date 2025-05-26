@@ -200,19 +200,19 @@ internal class WebServer : IDisposable {
         if ((buffer == null) && imageName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)) {
             var imageNameParts = imageName.Split('_');
             if ((imageNameParts.Length == 2) && DateTime.TryParseExact(imageNameParts[1].Replace(".bmp", ""), "yyyy-MM-dd'T'HH-mm-ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time)) {
-                var composerId = imageNameParts[0];
-                if (!DisplaysById.TryGetValue(composerId, out var composer)) {
+                var displayId = imageNameParts[0];
+                if (!DisplaysById.TryGetValue(displayId, out var display)) {
                     if (DefaultDisplay is not null) {
-                        composer = DefaultDisplay;
+                        display = DefaultDisplay;
                     } else {
-                        Log.Warning($"No composer found for ID {composerId}, and no default composer is set");
+                        Log.Warning($"No composer found for ID {displayId}, and no default composer is set");
                         response.StatusCode = 404;
                         response.Close();
                         return;
                     }
                 }
-                Log.Info($"Composing image for {composerId} at {time:yyyy-MM-dd' 'HH:mm:ss} using composer {composer.DeviceId}");
-                buffer = composer.GetImageBytes(time);
+                Log.Info($"Composing image for {displayId} at {time:yyyy-MM-dd' 'HH:mm:ss} using composer {display.DeviceId}");
+                buffer = display.GetImageBytes(time);
             }
         }
 

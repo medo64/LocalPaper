@@ -50,7 +50,7 @@ internal static class App {
         Log.Info($"Default time zone is '{defaultTimeZone.Id}' (UTC{offsetSign}{defaultTimeZone.BaseUtcOffset:hh\\:mm})");
 
 
-        // Device config
+        // Device config (Default)
 
         var configDir = Environment.GetEnvironmentVariable("LP_CONFIG_DIR") ?? "/config";
         var configDirInfo = new DirectoryInfo(configDir);
@@ -62,8 +62,6 @@ internal static class App {
         }
 
         DeviceDisplay? defaultDisplay = null;
-        var displays = new List<DeviceDisplay>();
-
         var anyConfig = new FileInfo(Path.Combine(configDirInfo.FullName, "any", "config.ini"));
         var anyConfigAlt = new FileInfo(Path.Combine(configDirInfo.FullName, "config.ini"));
         if (anyConfig.Exists) {
@@ -71,13 +69,17 @@ internal static class App {
             if (anyConfigAlt.Exists) {
                 Log.Warning($"Ignoring alternative wildcard configuration file '{anyConfigAlt.FullName}'");
             }
-            defaultDisplay = GetDisplay("any", configDirInfo, anyConfig, defaultTimeZone);
+            defaultDisplay = GetDisplay("any", anyConfig, defaultTimeZone);
         } else if (anyConfigAlt.Exists) {
             Log.Info($"Using alternate wildcard configuration from '{anyConfig.FullName}'");
-            defaultDisplay = GetDisplay("any", configDirInfo, anyConfigAlt, defaultTimeZone);
+            defaultDisplay = GetDisplay("any", anyConfigAlt, defaultTimeZone);
         }
 
-        foreach (var directory in configDirInfo.EnumerateDirectories()) {
+
+        // Device config
+
+        var displays = new List<DeviceDisplay>();
+        foreach (var directory in configDirInfo.EnumerateDirectories("*", SearchOption.TopDirectoryOnly)) {
             var deviceId = directory.Name;
             if (deviceId.Equals("any", StringComparison.Ordinal)) { continue; }  // already processed above
 
@@ -86,7 +88,7 @@ internal static class App {
                 Log.Warning($"Device {deviceId} does not contain a configuration file 'config.ini'");
                 continue;
             }
-            defaultDisplay = GetDisplay(deviceId, configDirInfo, deviceConfig, defaultTimeZone);
+            displays.Add(GetDisplay(deviceId, deviceConfig, defaultTimeZone));
         }
 
 
@@ -113,7 +115,7 @@ internal static class App {
     }
 
 
-    public static DeviceDisplay GetDisplay(string displayId, DirectoryInfo configDirectory, FileInfo configFile, TimeZoneInfo defaultTimeZone) {  // TODO: currently hardcoded
+    public static DeviceDisplay GetDisplay(string displayId, FileInfo configFile, TimeZoneInfo defaultTimeZone) {  // TODO: currently hardcoded
         var config = new ConfigFile(configFile);
 
         var interval = config.Consume("Display", "Interval", 600);
@@ -159,7 +161,7 @@ internal static class App {
             var offset = TimeSpan.FromHours(config.Consume(section, "Offset", 0));
 
             if ("Events".Equals(kind, StringComparison.Ordinal) || "Event".Equals(kind, StringComparison.Ordinal)) {
-                var directory = new DirectoryInfo(Path.Combine(configDirectory.FullName, displayId, config.Consume(section, "Directory", section)));
+                var directory = new DirectoryInfo(Path.Combine(configFile.DirectoryName!, config.Consume(section, "Directory", section)));
                 if (!directory.Exists) {
                     Log.Warning($"Display '{displayId}' composer 'Events' in section '{section}' at ({left}, {top}, {right}, {bottom}) has non-existing directory '{directory.FullName}'; skipping");
                     continue;
