@@ -95,6 +95,13 @@ internal class WebServer : IDisposable {
     private Encoding Utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     private void RespondToSetup(HttpListenerRequest request, HttpListenerResponse response) {
+        if (Log.MinimumLogLevel <= LogLevel.Verbose) {
+            foreach (var key in request.Headers.AllKeys) {
+                var value = request.Headers[key];
+                Log.Verbose($"Header: {key}: {value}");
+            }
+        }
+
         var macAddress = request.Headers["ID"] ?? "unknown";
         var id = macAddress.Replace(":", "").ToUpperInvariant();
 
@@ -125,6 +132,13 @@ internal class WebServer : IDisposable {
     }
 
     private void RespondToDisplay(HttpListenerRequest request, HttpListenerResponse response) {
+        if (Log.MinimumLogLevel <= LogLevel.Verbose) {
+            foreach (var key in request.Headers.AllKeys) {
+                var value = request.Headers[key];
+                Log.Verbose($"Header: {key}: {value}");
+            }
+        }
+
         var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant() ?? "unknown";
         var voltage = request.Headers["Battery-Voltage"] ?? "?";
         var fwVersion = request.Headers["FW-Version"] ?? "?";
@@ -173,8 +187,14 @@ internal class WebServer : IDisposable {
     }
 
     private void RespondToFile(HttpListenerRequest request, HttpListenerResponse response) {
-        var imageName = request.Url?.AbsolutePath.TrimStart('/') ?? "";
+        if (Log.MinimumLogLevel <= LogLevel.Verbose) {
+            foreach (var key in request.Headers.AllKeys) {
+                var value = request.Headers[key];
+                Log.Verbose($"Header: {key}: {value}");
+            }
+        }
 
+        var imageName = request.Url?.AbsolutePath.TrimStart('/') ?? "";
         var buffer = GetResourceBuffer(imageName);
 
         if ((buffer == null) && imageName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)) {
