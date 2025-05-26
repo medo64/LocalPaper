@@ -65,7 +65,9 @@ if [ "$GIT_INDEX" = "" ]; then GIT_INDEX=0; fi
 GIT_HASH=$( git log -n 1 --format=%h 2>/dev/null )
 if [ "$GIT_HASH" = "" ]; then GIT_HASH=alpha; fi
 
-GIT_VERSION=$( git tag --points-at HEAD 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n 1p | sed 's/^v//g' | xargs )
+if [ $HAS_CHANGES -eq 0 ] ; then  # only if there are no changes, check for tag
+    GIT_VERSION=$( git tag --points-at HEAD 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n 1p | sed 's/^v//g' | xargs )
+fi
 if [ "$GIT_VERSION" != "" ]; then
     if [ "$HAS_CHANGES" -eq 0 ]; then
         ASSEMBLY_VERSION_TEXT="$GIT_VERSION"
