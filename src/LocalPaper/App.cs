@@ -139,6 +139,7 @@ internal static class App {
             }
             var rect = new Rectangle(left, top, right - left + 1, bottom - top + 1);
             var isInverted = config.Consume(section, "Inverted", false);
+            var offset = TimeSpan.FromHours(config.Consume(section, "Offset", 0));
 
             if ("Events".Equals(kind, StringComparison.Ordinal) || "Event".Equals(kind, StringComparison.Ordinal)) {
                 var directory = new DirectoryInfo(Path.Combine(configDirectory.FullName, displayId, config.Consume(section, "Directory", section)));
@@ -146,12 +147,12 @@ internal static class App {
                     Log.Warning($"Display '{displayId}' composer 'Events' in section '{section}' at ({left}, {top}, {right}, {bottom}) has non-existing directory '{directory.FullName}'; skipping");
                     continue;
                 }
-                var offset = TimeSpan.FromHours(config.Consume(section, "Offset", 0));
                 composers.Add(new ComposerBag(
                     section,
-                    new EventsComposer(directory, offset),
+                    new EventsComposer(directory),
                     rect,
-                    isInverted
+                    isInverted,
+                    offset
                 ));
             } else if ("Line".Equals(kind, StringComparison.Ordinal)) {
                 var thickness = config.Consume(section, "Thickness", 1, 1, 100);
@@ -159,14 +160,16 @@ internal static class App {
                     section,
                     new LineComposer(thickness),
                     rect,
-                    isInverted
+                    isInverted,
+                    offset
                 ));
             } else if ("Rectangle".Equals(kind, StringComparison.Ordinal)) {
                 composers.Add(new ComposerBag(
                     section,
                     new RectangleComposer(),
                     rect,
-                    isInverted
+                    isInverted,
+                    offset
                 ));
             } else if ("Time".Equals(kind, StringComparison.Ordinal)) {
                 var format = config.Consume(section, "Format", "dddd");
@@ -175,7 +178,8 @@ internal static class App {
                     section,
                     new TimeComposer(format, align),
                     rect,
-                    isInverted
+                    isInverted,
+                    offset
                 ));
             } else {
                 Log.Warning($"Display {displayId} has unknown section '{section}'; skipping");

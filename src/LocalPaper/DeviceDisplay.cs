@@ -53,7 +53,7 @@ internal class DeviceDisplay {
                 composerBag.IsInverted ? SKColors.White : SKColors.Black,
                 "DejaVu Sans"
             );
-            composerBag.Composer.Draw(subBitmap, rect, style, time);
+            composerBag.Composer.Draw(subBitmap, rect, style, time.AddSeconds(composerBag.Offset.TotalSeconds));
 
             canvas.DrawBitmap(subBitmap, new SKPoint(composerBag.Rectangle.Left, composerBag.Rectangle.Top));
         }
