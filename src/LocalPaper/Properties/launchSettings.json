@@ -5,6 +5,7 @@
             "commandLineArgs": "",
             "workingDirectory": "$(ProjectDir)",
             "environmentVariables": {
+                "LP_LOGLEVEL": "VERBOSE",
                 "LP_HOST": "127.0.0.1",
                 "LP_CONFIG_DIR": "./../../example/",
                 "LP_TIMEZONE": "America/Los_Angeles"

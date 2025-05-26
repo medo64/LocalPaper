@@ -10,6 +10,23 @@ using SkiaSharp;
 
 internal static class App {
     public static void Main(string[] args) {
+        // Log level
+
+        Log.MinimumLogLevel = Environment.GetEnvironmentVariable("LP_LOGLEVEL")?.ToUpperInvariant() switch {
+            "V" or "VERBOSE" or "T" or "TRACE" => LogLevel.Verbose,
+            "D" or "DEBUG" => LogLevel.Debug,
+            "I" or "INFO" or "INFORMATION" => LogLevel.Information,
+            "W" or "WARNING" => LogLevel.Warning,
+            "E" or "ERROR" => LogLevel.Error,
+            "C" or "CRITICAL" => LogLevel.Critical,
+#if DEBUG
+            _ => LogLevel.Verbose,
+#else
+            _ => LogLevel.Information,
+#endif
+        };
+
+
         // Host config
 
         var host = Environment.GetEnvironmentVariable("LP_HOST") ?? Environment.MachineName;
