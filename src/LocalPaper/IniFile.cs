@@ -185,10 +185,10 @@ public class IniFile {
                             }
                         } else {  // key value
                             var parts = line.Split(new char[] { '=' }, 2);
-                            if (parts.Length == 2) {  // ignore lines that don't have both key and value
-                                var key = parts[0]?.Trim() ?? "";
+                            if (parts.Length <= 2) {  // ignore lines that don't have both key and value
+                                var key = (parts.Length >= 2) ? parts[0]?.Trim() ?? "" : "";
                                 if (!key.Contains('#')) {  // make sure comment doesn't start in key
-                                    var valueChars = new Queue<char>(parts[1]);
+                                    var valueChars = new Queue<char>(parts[parts.Length - 1]);
                                     valueChars.Enqueue('\n');  // add new line to make parsing easier
 
                                     var state = State.Normal;
