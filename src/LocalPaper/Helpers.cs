@@ -12,6 +12,7 @@ internal static class Helpers {
 
         foreach (var file in directories) {
             var ini = new IniFile(file.FullName);
+            var headerSuffix = ini.Read("Config", "HeaderSuffix", string.Empty);
             var defaultTitle = ini.Read("Config", "DefaultTitle", string.Empty);
             foreach (var section in ini.GetSections()) {
                 var sectionParts = section.Split('-', StringSplitOptions.RemoveEmptyEntries);
@@ -45,7 +46,10 @@ internal static class Helpers {
                 if (isMatch) {
                     foreach (var key in ini.GetKeys(section)) {
                         foreach (var value in ini.ReadAll(section, key)) {
-                            yield return new KeyValuePair<string, string>(string.IsNullOrEmpty(key) ? defaultTitle : key, value);
+                            var header = string.IsNullOrEmpty(key) ? defaultTitle : key;
+                            if (!string.IsNullOrEmpty(headerSuffix)) { header += " (" + headerSuffix + ")"; }
+                            var text = value;
+                            yield return new KeyValuePair<string, string>(header, text);
                         }
                     }
                 }

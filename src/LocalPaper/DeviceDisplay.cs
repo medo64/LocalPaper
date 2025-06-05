@@ -52,6 +52,7 @@ internal class DeviceDisplay {
             using var style = new StyleBag(
                 composerBag.IsInverted ? SKColors.White : SKColors.Black,
                 "DejaVu Sans"
+                //"Roboto Condensed"
             );
             composerBag.Composer.Draw(subBitmap, rect, style, time.AddSeconds(composerBag.Offset.TotalSeconds));
 
