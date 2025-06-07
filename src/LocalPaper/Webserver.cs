@@ -141,20 +141,23 @@ internal class WebServer : IDisposable {
 
         var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant() ?? "unknown";
         var voltageText = request.Headers["Battery-Voltage"] ?? null;
+        var rssiText = request.Headers["RSSI"] ?? null;
         var fwVersion = request.Headers["FW-Version"] ?? null;
 
         var percentage = 100;
         float? voltage = null;
         if (float.TryParse(voltageText, NumberStyles.Float, CultureInfo.InvariantCulture, out var voltageValue)) {
             voltage = voltageValue;
-            percentage = Battery.RecordVoltage(id, voltageValue);
+            percentage = DisplayStorage.RecordBatteryVoltage(id, voltageValue);
             if (percentage < 10) {
                 Log.Error($"Battery for {id} is getting really low: {percentage}%");
             } else if (percentage < 30) {
                 Log.Warning($"Battery for {id} is low: {percentage}%");
-            } else {
-                Log.Debug($"Battery for {id} is at {percentage}%");
             }
+        }
+
+        if (int.TryParse(rssiText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rssi)) {
+            DisplayStorage.RecordWirelessRssi(id, rssi);
         }
 
         if (!DisplaysById.TryGetValue(id, out var display)) {
@@ -243,10 +246,13 @@ internal class WebServer : IDisposable {
 
                 Log.Info($"Composing image for {displayId} at {time:yyyy-MM-dd' 'HH:mm:ss} using composer {display.DeviceId}");
                 buffer = display.GetImageBytes(new DataBag() {
+                    DisplayId = display.DeviceId,
                     UtcTime = time,
                     TimeZone = TimeZoneInfo.Utc,
-                    BatteryVoltage = Battery.GetVoltage(displayId),
-                    BatteryPercentage = Battery.GetPercentage(displayId)
+                    BatteryVoltage = DisplayStorage.GetBatteryVoltage(displayId),
+                    BatteryPercentage = DisplayStorage.GetBatteryPercentage(displayId),
+                    WirelessRssi = DisplayStorage.GetWirelessRssi(displayId),
+                    WirelessPercentage = DisplayStorage.GetWireleassPercentage(displayId)
                 });
             }
         }
