@@ -28,13 +28,13 @@ internal class DeviceDisplay {
 
 
 
-    public byte[]? GetImageBytes(DateTime time) {
+    public byte[]? GetImageBytes(DataBag data) {
         using var bitmap = new SKBitmap(ImageWidth, ImageHeight);
-        Draw(bitmap, TimeZoneInfo.ConvertTime(time, TimeZone));
+        Draw(bitmap, data with { TimeZone = TimeZone, });
         return Get1BPPImageBytes(bitmap);
     }
 
-    private void Draw(SKBitmap bitmap, DateTime time) {
+    private void Draw(SKBitmap bitmap, DataBag data) {
         var displayBackground = IsInverted ? SKColors.Black : SKColors.White;
 
         using var canvas = new SKCanvas(bitmap);
@@ -52,9 +52,12 @@ internal class DeviceDisplay {
             using var style = new StyleBag(
                 composerBag.IsInverted ? SKColors.White : SKColors.Black,
                 "DejaVu Sans"
-                //"Roboto Condensed"
+            //"Roboto Condensed"
             );
-            composerBag.Composer.Draw(subBitmap, rect, style, time.AddSeconds(composerBag.Offset.TotalSeconds));
+            var dataWithOffset = data with {
+                UtcTime = data.UtcTime.AddSeconds(composerBag.Offset.TotalSeconds)
+            };
+            composerBag.Composer.Draw(subBitmap, rect, style, dataWithOffset);
 
             canvas.DrawBitmap(subBitmap, new SKPoint(composerBag.Rectangle.Left, composerBag.Rectangle.Top));
         }

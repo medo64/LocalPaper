@@ -5,6 +5,6 @@ using SkiaSharp;
 
 internal interface IComposer {
 
-    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time);
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DataBag data);
 
 }

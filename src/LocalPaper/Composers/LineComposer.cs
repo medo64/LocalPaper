@@ -5,7 +5,6 @@ using SkiaSharp;
 
 internal sealed class LineComposer : IComposer {
 
-
     public LineComposer(int thickness) {
         Thickness = thickness;
     }
@@ -15,7 +14,7 @@ internal sealed class LineComposer : IComposer {
 
     #region IComposer
 
-    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DataBag _) {
         using var canvas = new SKCanvas(bitmap);
         using var paint = new SKPaint() { Color = style.Color, StrokeWidth = Thickness };
         canvas.DrawLine(0, 0, bitmap.Width - 1, bitmap.Height - 1, paint);

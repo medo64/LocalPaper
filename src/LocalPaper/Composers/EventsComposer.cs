@@ -15,7 +15,7 @@ internal sealed class EventsComposer : IComposer {
 
     #region IComposer
 
-    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DataBag data) {
         using var canvas = new SKCanvas(bitmap);
         canvas.ClipRect(clipRect);
         using var paint = new SKPaint() { Color = style.Color };
@@ -26,7 +26,7 @@ internal sealed class EventsComposer : IComposer {
         var y = (int)(clipRect.Top - fontText.Metrics.Ascent);
         var lastKey = string.Empty;
         var lastValue = string.Empty;
-        foreach (var kvp in Helpers.GetConfigEntries(Directory, DateOnly.FromDateTime(time))) {
+        foreach (var kvp in Helpers.GetConfigEntries(Directory, DateOnly.FromDateTime(data.LocalTime))) {
             if (!kvp.Key.Equals(lastKey, StringComparison.Ordinal)) {
                 if (!string.IsNullOrEmpty(lastKey)) { y += (int)clipRect.Top; }
                 canvas.DrawText(kvp.Key, clipRect.Left, y, SKTextAlign.Left, fontHead, paint);

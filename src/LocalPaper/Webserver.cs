@@ -242,7 +242,12 @@ internal class WebServer : IDisposable {
 #endif
 
                 Log.Info($"Composing image for {displayId} at {time:yyyy-MM-dd' 'HH:mm:ss} using composer {display.DeviceId}");
-                buffer = display.GetImageBytes(time);
+                buffer = display.GetImageBytes(new DataBag() {
+                    UtcTime = time,
+                    TimeZone = TimeZoneInfo.Utc,
+                    BatteryVoltage = Battery.GetVoltage(displayId),
+                    BatteryPercentage = Battery.GetPercentage(displayId)
+                });
             }
         }
 

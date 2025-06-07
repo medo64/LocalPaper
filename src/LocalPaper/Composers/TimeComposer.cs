@@ -20,7 +20,7 @@ internal sealed class TimeComposer : IComposer {
 
     #region IComposer
 
-    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DataBag data) {
         using var canvas = new SKCanvas(bitmap);
         using var paint = new SKPaint() { Color = style.Color };
 
@@ -35,14 +35,14 @@ internal sealed class TimeComposer : IComposer {
 
         switch (HAlign) {
             case SKTextAlign.Left:
-                canvas.DrawText(time.ToString(Format), margin * 1.5f, centerY, SKTextAlign.Left, font, paint);
+                canvas.DrawText(data.LocalTime.ToString(Format), margin * 1.5f, centerY, SKTextAlign.Left, font, paint);
                 break;
             case SKTextAlign.Right:
-                canvas.DrawText(time.ToString(Format), bitmap.Width - margin * 1.5f, centerY, SKTextAlign.Right, font, paint);
+                canvas.DrawText(data.LocalTime.ToString(Format), bitmap.Width - margin * 1.5f, centerY, SKTextAlign.Right, font, paint);
                 break;
             default:
                 var centerX = bitmap.Width / 2;
-                canvas.DrawText(time.ToString(Format), centerX, centerY, SKTextAlign.Center, font, paint);
+                canvas.DrawText(data.LocalTime.ToString(Format), centerX, centerY, SKTextAlign.Center, font, paint);
                 break;
         }
 

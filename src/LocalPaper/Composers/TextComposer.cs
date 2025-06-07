@@ -22,7 +22,7 @@ internal sealed class TextComposer : IComposer {
 
     #region IComposer
 
-    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DateTime time) {
+    public void Draw(SKBitmap bitmap, SKRect clipRect, StyleBag style, DataBag _) {
         using var canvas = new SKCanvas(bitmap);
         canvas.ClipRect(clipRect);
         using var paint = new SKPaint() { Color = style.Color };
