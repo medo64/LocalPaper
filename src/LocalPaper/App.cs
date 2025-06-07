@@ -160,7 +160,17 @@ internal static class App {
             var isInverted = config.Consume(section, "Inverted", false);
             var offset = TimeSpan.FromHours(config.Consume(section, "Offset", 0));
 
-            if ("Events".Equals(kind, StringComparison.Ordinal) || "Event".Equals(kind, StringComparison.Ordinal)) {
+            if ("Battery".Equals(kind, StringComparison.Ordinal)) {
+                var showIfBelow = config.Consume(section, "ShowIfBelow", 100, 0, 100);
+                var hAlign = config.Consume(section, "HAlign", SKTextAlign.Left);
+                composers.Add(new ComposerBag(
+                    section,
+                    new BatteryComposer(showIfBelow, hAlign),
+                    rect,
+                    isInverted,
+                    offset
+                ));
+            } else if ("Events".Equals(kind, StringComparison.Ordinal) || "Event".Equals(kind, StringComparison.Ordinal)) {
                 var directory = new DirectoryInfo(Path.Combine(configFile.DirectoryName!, config.Consume(section, "Directory", section)));
                 if (!directory.Exists) {
                     Log.Warning($"Display '{displayId}' composer 'Events' in section '{section}' at ({left}, {top}, {right}, {bottom}) has non-existing directory '{directory.FullName}'; skipping");

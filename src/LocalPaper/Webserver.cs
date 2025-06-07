@@ -148,9 +148,9 @@ internal class WebServer : IDisposable {
         if (float.TryParse(voltageText, NumberStyles.Float, CultureInfo.InvariantCulture, out var voltageValue)) {
             voltage = voltageValue;
             percentage = Battery.RecordVoltage(id, voltageValue);
-            if (percentage <= 10) {
+            if (percentage < 10) {
                 Log.Error($"Battery for {id} is getting really low: {percentage}%");
-            } else if (percentage <= 30) {
+            } else if (percentage < 30) {
                 Log.Warning($"Battery for {id} is low: {percentage}%");
             } else {
                 Log.Debug($"Battery for {id} is at {percentage}%");
@@ -203,7 +203,7 @@ internal class WebServer : IDisposable {
         response.OutputStream.Write(buffer, 0, buffer.Length);
         response.OutputStream.Close();
 
-        Log.Debug($"Responded to display request from {id} (battery: {voltage?.ToString(CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
+        Log.Debug($"Responded to display request from {id} (battery: {voltage?.ToString("0.00", CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
     }
 
     private void RespondToFile(HttpListenerRequest request, HttpListenerResponse response) {

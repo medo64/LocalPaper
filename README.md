@@ -89,6 +89,7 @@ The following composers are currently available:
 
 | Composer  | Extra                      | Description                                        |
 |-----------|----------------------------|----------------------------------------------------|
+| Battery   | `HAlign` `ShowIfBelow`     | Shows battery level                                |
 | Events    | (subdirectory)             | Shows list of events based on subdirectory entries |
 | Line      | `Thickness`                | Draws a line                                       |
 | Rectangle | `Filled` `Thickness`       | Draws a rectangle                                  |
