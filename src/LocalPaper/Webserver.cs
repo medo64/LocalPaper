@@ -140,8 +140,22 @@ internal class WebServer : IDisposable {
         }
 
         var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant() ?? "unknown";
-        var voltage = request.Headers["Battery-Voltage"] ?? "?";
-        var fwVersion = request.Headers["FW-Version"] ?? "?";
+        var voltageText = request.Headers["Battery-Voltage"] ?? null;
+        var fwVersion = request.Headers["FW-Version"] ?? null;
+
+        var percentage = 100;
+        float? voltage = null;
+        if (float.TryParse(voltageText, NumberStyles.Float, CultureInfo.InvariantCulture, out var voltageValue)) {
+            voltage = voltageValue;
+            percentage = Battery.RecordVoltage(id, voltageValue);
+            if (percentage <= 10) {
+                Log.Error($"Battery for {id} is getting really low: {percentage}%");
+            } else if (percentage <= 30) {
+                Log.Warning($"Battery for {id} is low: {percentage}%");
+            } else {
+                Log.Debug($"Battery for {id} is at {percentage}%");
+            }
+        }
 
         if (!DisplaysById.TryGetValue(id, out var display)) {
             if (DefaultDisplay is not null) {
@@ -156,6 +170,12 @@ internal class WebServer : IDisposable {
         }
 
         var interval = (int)display.Interval.TotalSeconds;
+        if (percentage <= 10) {  // if battery is below 10%, increase the interval to 1 hour
+            Math.Max(interval, 3600);
+        } else if (percentage <= 30) {  // if battery is below 30%, increase the interval to 15 minutes
+            Math.Max(interval, 900);
+        }
+
         var timeNow = DateTime.UtcNow;
         var ticksCurr = DateTime.UtcNow.Ticks;
         ticksCurr /= 10_000_000L * interval;
@@ -183,7 +203,7 @@ internal class WebServer : IDisposable {
         response.OutputStream.Write(buffer, 0, buffer.Length);
         response.OutputStream.Close();
 
-        Log.Debug($"Responded to display request from {id} (battery: {voltage}V; firmware: {fwVersion})");
+        Log.Debug($"Responded to display request from {id} (battery: {voltage?.ToString(CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
     }
 
     private void RespondToFile(HttpListenerRequest request, HttpListenerResponse response) {
