@@ -26,20 +26,22 @@ internal sealed class BatteryComposer : IComposer {
         using var canvas = new SKCanvas(bitmap);
         using var paint = new SKPaint() { Color = style.Color };
 
-        if ((data.BatteryLevel.Percentage is null) || (data.BatteryLevel.Percentage >= ShowIfBelow)) { return; }
-        var percentage = data.BatteryLevel.Percentage.Value;
-
         var top = bitmap.Height / 2 - 8;
         var left = HAlign switch {
             SKTextAlign.Left => 0,
             SKTextAlign.Right => bitmap.Width - 8,
             _ => bitmap.Width / 2 - 4,
         };
-        DrawBattery(percentage, canvas, paint, top, left);
+        DrawBattery(data.BatteryLevel, canvas, paint, top, left);
 
         var showText = (HAlign != SKTextAlign.Center);
         if (showText) {
-            var text = percentage.ToString("0'%'", CultureInfo.InvariantCulture);
+            string text = string.Empty;
+            if (data.BatteryLevel.IsCharging) {
+                text = "Charging";
+            } else if ((data.BatteryLevel.Percentage is not null) && (data.BatteryLevel.Percentage < ShowIfBelow)) {
+                text = data.BatteryLevel.Percentage.Value.ToString("0'%'", CultureInfo.InvariantCulture);
+            }
             using var font = style.GetFont(16);
             var textMargin = clipRect.Left / 2;
             var centerY = bitmap.Height / 2 - (font.Metrics.Descent + font.Metrics.Ascent) / 2;
@@ -56,8 +58,26 @@ internal sealed class BatteryComposer : IComposer {
         }
     }
 
-    private static void DrawBattery(int percentage, SKCanvas canvas, SKPaint paint, int imageTop, int imageLeft) {
-        if (percentage == 0) {
+    private void DrawBattery(BatteryLevel level, SKCanvas canvas, SKPaint paint, int imageTop, int imageLeft) {
+        if (level.IsCharging) {
+
+            // battery body with arrow
+            canvas.DrawPoint(imageLeft + 2, imageTop + 1, paint);
+            canvas.DrawPoint(imageLeft + 3, imageTop + 1, paint);
+            canvas.DrawPoint(imageLeft + 4, imageTop + 1, paint);
+            for (var i = 0; i <= 6; i++) {
+                canvas.DrawPoint(imageLeft + i, imageTop + 2, paint);
+                canvas.DrawPoint(imageLeft + i, imageTop + 13, paint);
+            }
+            for (var j = 2; j <= 12; j++) {
+                for (var i = 0; i <= 6; i++) {
+                    if ((i == 3) && (j is >= 6 and <= 10)) { continue; }
+                    if ((i is >= 1 and <= 5) && (j == 8)) { continue; }
+                    canvas.DrawPoint(imageLeft + i, imageTop + j, paint);
+                }
+            }
+
+        } else if (level.Percentage == 0) {
 
             // battery body
             canvas.DrawPoint(imageLeft + 2, imageTop + 1, paint);
@@ -81,7 +101,7 @@ internal sealed class BatteryComposer : IComposer {
             canvas.DrawPoint(imageLeft + 3, imageTop + 8, paint);
             canvas.DrawPoint(imageLeft + 3, imageTop + 10, paint);
 
-        } else {
+        } else if (level.Percentage < ShowIfBelow) {
 
             // battery body
             canvas.DrawPoint(imageLeft + 2, imageTop + 1, paint);
@@ -97,7 +117,7 @@ internal sealed class BatteryComposer : IComposer {
             }
 
             // battery fill
-            var percentHeight = (int)Math.Ceiling((double)percentage / 10);
+            var percentHeight = (int)Math.Ceiling(level.Percentage.Value / 10.0);
             for (var j = 13 - percentHeight; j <= 12; j++) {
                 canvas.DrawPoint(imageLeft + 1, imageTop + j, paint);
                 canvas.DrawPoint(imageLeft + 2, imageTop + j, paint);
