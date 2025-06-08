@@ -78,7 +78,7 @@ internal class WebServer : IDisposable {
             } else if ("/api/display".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 RespondToDisplay(context.Request, context.Response);
             } else if ("/api/log".Equals(url, StringComparison.OrdinalIgnoreCase)) {
-                // ignore
+                RespondToLog(context.Request, context.Response);
             } else if (url is not null) {
                 RespondToFile(context.Request, context.Response);
             }
@@ -206,6 +206,18 @@ internal class WebServer : IDisposable {
         response.OutputStream.Close();
 
         Log.Debug($"Responded to display request from {id} (battery: {batteryLevel.Voltage?.ToString("0.00", CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
+    }
+
+    private void RespondToLog(HttpListenerRequest request, HttpListenerResponse response) {
+        if (Log.MinimumLogLevel <= LogLevel.Verbose) {
+            foreach (var key in request.Headers.AllKeys) {
+                var value = request.Headers[key];
+                Log.Verbose($"Header: {key}: {value}");
+            }
+        }
+
+        response.StatusCode = 204;
+        response.Close();
     }
 
     private void RespondToFile(HttpListenerRequest request, HttpListenerResponse response) {
