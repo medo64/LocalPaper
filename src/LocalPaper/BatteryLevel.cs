@@ -18,7 +18,7 @@ internal sealed record BatteryLevel {
                 Percentage = null;
                 IsCharging = true;
             } else {
-                Percentage = (int)Math.Min(Math.Max(Math.Round((voltage.Value - 3.2) * 100, 0), 0), 100);  // assume linear from 4.2V to 3.2V
+                Percentage = (int)Math.Min(Math.Max(Math.Ceiling(100.0 * (voltage.Value - MinVoltage) / (MaxVoltage - MinVoltage)), 0), 100);
                 IsCharging = false;
             }
         } else {
@@ -32,5 +32,9 @@ internal sealed record BatteryLevel {
     public double? Voltage { get; init; }
     public int? Percentage { get; init; }
     public bool IsCharging { get; init; }
+
+
+    private static readonly double MinVoltage = 3.05;
+    private static readonly double MaxVoltage = 4.05;
 
 }
