@@ -26,8 +26,8 @@ internal sealed class BatteryComposer : IComposer {
         using var canvas = new SKCanvas(bitmap);
         using var paint = new SKPaint() { Color = style.Color };
 
-        if ((data.BatteryPercentage is null) || (data.BatteryPercentage >= ShowIfBelow)) { return; }
-        var percentage = data.BatteryPercentage.Value;
+        if ((data.BatteryLevel.Percentage is null) || (data.BatteryLevel.Percentage >= ShowIfBelow)) { return; }
+        var percentage = data.BatteryLevel.Percentage.Value;
 
         var top = bitmap.Height / 2 - 8;
         var left = HAlign switch {

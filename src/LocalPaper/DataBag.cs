@@ -5,17 +5,15 @@ using SkiaSharp;
 
 internal sealed record DataBag {
 
-    public DataBag() : this(string.Empty, DateTime.UtcNow, TimeZoneInfo.Utc, null, null, null, null) {
+    public DataBag() : this(string.Empty, DateTime.UtcNow, TimeZoneInfo.Utc, new BatteryLevel(), new WirelessLevel()) {
     }
 
-    public DataBag(string displayId, DateTime utcTime, TimeZoneInfo timeZone, float? batteryVoltage, int? batteryPercentage, int? wirelessRssi, int? wirelessPercentage) {
+    public DataBag(string displayId, DateTime utcTime, TimeZoneInfo timeZone, BatteryLevel batteryLevel, WirelessLevel wirelessLevel) {
         DisplayId = displayId;
         UtcTime = utcTime;
         TimeZone = timeZone;
-        BatteryVoltage = batteryVoltage;
-        BatteryPercentage = batteryPercentage;
-        WirelessRssi = wirelessRssi;
-        WirelessPercentage = wirelessPercentage;
+        BatteryLevel = batteryLevel;
+        WirelessLevel = wirelessLevel;
     }
 
 
@@ -25,10 +23,7 @@ internal sealed record DataBag {
     public TimeZoneInfo TimeZone { get; init; }
     public DateTime LocalTime => TimeZoneInfo.ConvertTime(UtcTime, TimeZone);
 
-    public float? BatteryVoltage { get; init; }
-    public int? BatteryPercentage { get; init; }
-
-    public int? WirelessRssi { get; init; }
-    public int? WirelessPercentage { get; init; }
+    public BatteryLevel BatteryLevel { get; init; }
+    public WirelessLevel WirelessLevel { get; init; }
 
 }

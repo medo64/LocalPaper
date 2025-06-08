@@ -144,20 +144,19 @@ internal class WebServer : IDisposable {
         var rssiText = request.Headers["RSSI"] ?? null;
         var fwVersion = request.Headers["FW-Version"] ?? null;
 
-        var percentage = 100;
-        float? voltage = null;
-        if (float.TryParse(voltageText, NumberStyles.Float, CultureInfo.InvariantCulture, out var voltageValue)) {
-            voltage = voltageValue;
-            percentage = DisplayStorage.RecordBatteryVoltage(id, voltageValue);
-            if (percentage < 10) {
-                Log.Error($"Battery for {id} is getting really low: {percentage}%");
-            } else if (percentage < 30) {
-                Log.Warning($"Battery for {id} is low: {percentage}%");
+        var batteryLevel = new BatteryLevel(null);
+        if (double.TryParse(voltageText, NumberStyles.Float, CultureInfo.InvariantCulture, out var voltage)) {
+            batteryLevel = new BatteryLevel(voltage);
+            Recorder.RecordBattery(id, batteryLevel);
+            if (batteryLevel.Percentage < 10) {
+                Log.Error($"Battery for {id} is getting really low: {batteryLevel.Percentage}%");
+            } else if (batteryLevel.Percentage < 30) {
+                Log.Warning($"Battery for {id} is low: {batteryLevel.Percentage}%");
             }
         }
 
         if (int.TryParse(rssiText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rssi)) {
-            DisplayStorage.RecordWirelessRssi(id, rssi);
+            Recorder.RecordWireless(id, new WirelessLevel(rssi));
         }
 
         if (!DisplaysById.TryGetValue(id, out var display)) {
@@ -173,9 +172,9 @@ internal class WebServer : IDisposable {
         }
 
         var interval = (int)display.Interval.TotalSeconds;
-        if (percentage <= 10) {  // if battery is below 10%, increase the interval to 1 hour
+        if (batteryLevel.Percentage <= 10) {  // if battery is below 10%, increase the interval to 1 hour
             Math.Max(interval, 3600);
-        } else if (percentage <= 30) {  // if battery is below 30%, increase the interval to 15 minutes
+        } else if (batteryLevel.Percentage <= 30) {  // if battery is below 30%, increase the interval to 15 minutes
             Math.Max(interval, 900);
         }
 
@@ -206,7 +205,7 @@ internal class WebServer : IDisposable {
         response.OutputStream.Write(buffer, 0, buffer.Length);
         response.OutputStream.Close();
 
-        Log.Debug($"Responded to display request from {id} (battery: {voltage?.ToString("0.00", CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
+        Log.Debug($"Responded to display request from {id} (battery: {batteryLevel.Voltage?.ToString("0.00", CultureInfo.InvariantCulture) ?? "?"}V; firmware: {fwVersion})");
     }
 
     private void RespondToFile(HttpListenerRequest request, HttpListenerResponse response) {
@@ -249,10 +248,8 @@ internal class WebServer : IDisposable {
                     DisplayId = display.DeviceId,
                     UtcTime = time,
                     TimeZone = TimeZoneInfo.Utc,
-                    BatteryVoltage = DisplayStorage.GetBatteryVoltage(displayId),
-                    BatteryPercentage = DisplayStorage.GetBatteryPercentage(displayId),
-                    WirelessRssi = DisplayStorage.GetWirelessRssi(displayId),
-                    WirelessPercentage = DisplayStorage.GetWireleassPercentage(displayId)
+                    BatteryLevel = Recorder.GetBatteryLevel(displayId),
+                    WirelessLevel = Recorder.GetWirelessLevel(displayId),
                 });
             }
         }

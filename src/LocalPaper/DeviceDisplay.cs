@@ -52,7 +52,7 @@ internal class DeviceDisplay {
             using var style = new StyleBag(
                 composerBag.IsInverted ? SKColors.White : SKColors.Black,
                 "DejaVu Sans"
-            //"Roboto Condensed"
+                //"Roboto Condensed"
             );
             var dataWithOffset = data with {
                 UtcTime = data.UtcTime.AddSeconds(composerBag.Offset.TotalSeconds)
