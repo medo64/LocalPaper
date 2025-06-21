@@ -132,6 +132,8 @@ internal class WebServer : IDisposable {
         var json = "{ \"status\": 200, \"api_key\": \"" + apiKey + "\", \"friendly_id\": \"" + id + "\", \"image_url\": \"" + imageUrl + "\", \"filename\": \"empty_state\" }";
         var buffer = Utf8.GetBytes(json);
 
+        Log.Verbose("Response: " + json);
+
         response.ContentType = "application/json";
         response.ContentLength64 = buffer.Length;
         response.OutputStream.Write(buffer, 0, buffer.Length);
@@ -208,6 +210,8 @@ internal class WebServer : IDisposable {
 
         var json = "{ \"status\": 0, \"image_url\": \"" + imageUrl + "\", \"filename\": \"" + fileName + "\", \"refresh_rate\": " + refreshRate.ToString(CultureInfo.InvariantCulture) + ", \"reset_firmware\": false, \"update_firmware\": false, \"firmware_url\": null, \"special_function\": \"identify\" }";
         var buffer = Utf8.GetBytes(json);
+
+        Log.Verbose("Response: " + json);
 
         response.ContentType = "application/json";
         response.ContentLength64 = buffer.Length;
