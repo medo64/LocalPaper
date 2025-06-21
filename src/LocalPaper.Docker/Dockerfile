@@ -33,20 +33,12 @@ WORKDIR /config
 RUN chown -R $UID:$UID /config
 
 # Executables
-WORKDIR /app/bin
+WORKDIR /app
 COPY bin/linux-musl-x64/LocalPaper      ./
 COPY bin/linux-musl-x64/LocalPaper.pdb  ./
 COPY bin/linux-musl-x64/libSkiaSharp.so ./
-RUN  chmod +x LocalPaper
-
-# Executables (Setup)
-WORKDIR /app
-COPY src/LocalPaper.Docker/entrypoint.sh entrypoint
-COPY src/LocalPaper.Docker/healthcheck.sh healthcheck
-RUN chmod +x entrypoint healthcheck
-
-# Adjust permissions
 RUN chown -R $UID:$UID /app
+RUN chmod +x LocalPaper
 
 # User
 RUN addgroup -g $UID $UNAME
@@ -56,7 +48,12 @@ RUN adduser -D -u $UID -G $UNAME $UNAME
 RUN apk add tcpdump libcap
 RUN setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
 
+# Docker
+COPY src/LocalPaper.Docker/entrypoint.sh /entrypoint.sh
+COPY src/LocalPaper.Docker/healthcheck.sh /healthcheck.sh
+RUN chmod +x /entrypoint.sh /healthcheck.sh
+
 # Done
 USER $UNAME
-HEALTHCHECK --start-period=10s --start-interval=5s  --interval=60s --retries=3 --timeout=5s CMD /app/healthcheck
-ENTRYPOINT [ "/app/entrypoint" ]
+HEALTHCHECK --start-period=10s --start-interval=5s  --interval=60s --retries=3 --timeout=5s CMD /healthcheck.sh
+ENTRYPOINT [ "/entrypoint.sh" ]
