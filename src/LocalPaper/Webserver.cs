@@ -16,6 +16,7 @@ internal class WebServer : IDisposable {
 
         DefaultDisplay = defaultDisplay;
         foreach (var display in displays) {
+            Log.Debug($"Adding display {display.DeviceId} with interval {display.Interval.TotalSeconds} seconds");
             DisplaysById[display.DeviceId] = display;
         }
 
@@ -107,9 +108,9 @@ internal class WebServer : IDisposable {
         }
 
         var macAddress = request.Headers["ID"] ?? "unknown";
-        var id = macAddress.Replace(":", "").ToUpperInvariant();
+        var id = macAddress.Replace(":", "").ToUpperInvariant().Trim();
 
-        if (!DisplaysById.TryGetValue(macAddress, out var _)) {
+        if (!DisplaysById.TryGetValue(id, out var _)) {
             if (DefaultDisplay is not null) {
                 Log.Warning($"No composer found for ID {id} ({macAddress}), using default composer");
             } else {
@@ -143,7 +144,7 @@ internal class WebServer : IDisposable {
             }
         }
 
-        var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant() ?? "unknown";
+        var id = request.Headers["ID"]?.Replace(":", "")?.ToUpperInvariant()?.Trim() ?? "unknown";
         var voltageText = request.Headers["Battery-Voltage"] ?? null;
         var rssiText = request.Headers["RSSI"] ?? null;
         var fwVersion = request.Headers["FW-Version"] ?? null;

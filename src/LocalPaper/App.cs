@@ -84,8 +84,10 @@ internal static class App {
             if (deviceId.Equals("any", StringComparison.Ordinal)) { continue; }  // already processed above
 
             var deviceConfig = new FileInfo(Path.Combine(directory.FullName, "config.ini"));
-            if (!deviceConfig.Exists) {
-                Log.Warning($"Device {deviceId} does not contain a configuration file 'config.ini'");
+            if (deviceConfig.Exists) {
+                Log.Verbose($"Processing device {deviceId} configuration file '{directory.FullName}/config.ini'");
+            } else {
+                Log.Warning($"Device {deviceId} does not contain a configuration file '{directory.FullName}/config.ini'");
                 continue;
             }
             displays.Add(GetDisplay(deviceId, deviceConfig, defaultTimeZone));
