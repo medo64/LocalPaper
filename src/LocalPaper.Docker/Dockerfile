@@ -28,6 +28,10 @@ RUN apk add curl
 WORKDIR /app/example/any
 COPY example/any/* ./
 
+# Config
+WORKDIR /config
+RUN chown -R $UID:$UID /config
+
 # Executables
 WORKDIR /app/bin
 COPY bin/linux-musl-x64/LocalPaper      ./
@@ -43,10 +47,6 @@ RUN chmod +x entrypoint healthcheck
 
 # Adjust permissions
 RUN chown -R $UID:$UID /app
-
-# Config
-WORKDIR /config
-RUN chown -R $UID:$UID /config
 
 # User
 RUN addgroup -g $UID $UNAME
