@@ -123,7 +123,11 @@ internal class WebServer : IDisposable {
 
         var prefix = request.Url?.GetLeftPart(UriPartial.Authority);
         var imageUrl = prefix + "/hello.bmp";
-        var apiKey = id;  // randomize later
+
+        var idBytes = Utf8.GetBytes(id);
+        var apiKeyBytes = new byte[16];
+        Buffer.BlockCopy(idBytes, 0, apiKeyBytes, 0, idBytes.Length);
+        var apiKey = Convert.ToBase64String(apiKeyBytes).TrimEnd('=');
 
         var json = "{ \"status\": 200, \"api_key\": \"" + apiKey + "\", \"friendly_id\": \"" + id + "\", \"image_url\": \"" + imageUrl + "\", \"filename\": \"empty_state\" }";
         var buffer = Utf8.GetBytes(json);
