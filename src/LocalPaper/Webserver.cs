@@ -65,7 +65,7 @@ internal class WebServer : IDisposable {
             if (cancelToken.IsCancellationRequested) { break; }
             var context = getContextTask.Result;
 
-            var url = context.Request.Url?.AbsolutePath;
+            var url = context.Request.Url?.AbsolutePath?.TrimEnd('/') ?? null;
             Log.Verbose($"Received request for {url}");
 
             if ("/".Equals(url, StringComparison.OrdinalIgnoreCase)) {
