@@ -52,6 +52,7 @@ internal class WebServer : IDisposable {
 
         using var listener = new HttpListener();
         listener.Prefixes.Add($"http://+:{Port}/");
+        listener.Prefixes.Add("http://127.0.0.1/");
         listener.Start();
 
         Log.Info($"Started web server at {prefix}");
@@ -65,13 +66,16 @@ internal class WebServer : IDisposable {
             if (cancelToken.IsCancellationRequested) { break; }
             var context = getContextTask.Result;
 
-            var url = context.Request.Url?.AbsolutePath?.TrimEnd('/') ?? null;
+            var url = context.Request.Url?.AbsolutePath?.TrimEnd('/') ?? "";
+            if (string.IsNullOrEmpty(url)) { url = "/"; }
             Log.Verbose($"Received request for {url}");
 
             if ("/".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 context.Response.ContentType = "text/plain";
                 var buffer = Utf8.GetBytes("Hello World!");
                 context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                context.Response.OutputStream.Close();
+            } else if ("/health".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 context.Response.OutputStream.Close();
             } else if ("/api/setup".Equals(url, StringComparison.OrdinalIgnoreCase)) {
                 RespondToSetup(context.Request, context.Response);

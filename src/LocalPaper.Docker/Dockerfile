@@ -21,6 +21,9 @@ RUN apk add bind-tools tzdata
 # SkiaSharp packages
 RUN apk add fontconfig ttf-dejavu
 
+# Healthcheck packages
+RUN apk add curl
+
 # Example
 WORKDIR /app/example/any
 COPY example/any/* ./
@@ -32,10 +35,11 @@ COPY bin/linux-musl-x64/LocalPaper.pdb  ./
 COPY bin/linux-musl-x64/libSkiaSharp.so ./
 RUN  chmod +x LocalPaper
 
-# Executables
+# Executables (Setup)
 WORKDIR /app
 COPY src/LocalPaper.Docker/entrypoint.sh entrypoint
-RUN chmod +x entrypoint
+COPY src/LocalPaper.Docker/healthcheck.sh healthcheck
+RUN chmod +x entrypoint healthcheck
 
 # Adjust permissions
 RUN chown -R $UID:$UID /app
@@ -54,4 +58,5 @@ RUN setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
 
 # Done
 USER $UNAME
+HEALTHCHECK --start-period=10s --start-interval=5s  --interval=60s --retries=3 --timeout=5s CMD /app/healthcheck
 ENTRYPOINT [ "/app/entrypoint" ]
